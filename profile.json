@@ -1,0 +1,149 @@
+{
+  "first_name": "Tawsif",
+  "last_name": "Kamal",
+  "phone_number": "470-270-9973",
+  "email": "tawsif.kamal@gatech.edu",
+  "location": {
+    "full_location": "Atlanta, Georgia, United States",
+    "city": "Atlanta",
+    "state": "Georgia",
+    "country": "United States",
+    "street": "955 Spring Street NW",
+    "postal_code": "30309"
+  },
+  "resume_path": "./Tawsif_Kamal_resume.pdf",
+  "gpa": 3.5,
+  "graduation_date": {
+    "month": "December",
+    "year": "2025"
+  },
+  "legal_work_in_states": "yes",
+  "require_sponsorship": "no",
+  "gender_identity": "male",
+  "racial_background": "South Asian",
+  "is_veteran": "No",
+  "has_disability": "No",
+  "experiences": [
+    {
+      "company": "IBM",
+      "position": "Machine Learning Developer Intern (GenAI)",
+      "location": "Toronto, ON",
+      "start_date": "May 2024",
+      "end_date": "Aug 2024",
+      "responsibilities": [
+        "Engineered a GraphRAG LLM Agent projected to save project managers 40 hours per month by automating RAID log updates with information retrieved from Slack, email, and meeting note summaries.",
+        "Fine-tuned local models such as Llama-8b-instruct, Granite-7b-lab using LoRA + InstructLAB, achieving a 22% improvement in answering project management questions.",
+        "Integrated LLM Ops for model deployment using Docker, Azure AKS Kubernetes, GO-CD for CI/CD, and LangServe."
+      ]
+    },
+    {
+      "company": "IBM",
+      "position": "Data Science Intern (GenAI)",
+      "location": "Toronto, ON",
+      "start_date": "Jan 2024",
+      "end_date": "Apr 2024",
+      "responsibilities": [
+        "Architected a multi-agent LLM chatbot using LangGraph for Airbus ground engineers, reducing 200+ hours of manual work.",
+        "Designed a code generation LLM agent that converted 10,000+ lines of legacy SQL Stored Procedures to Java Spring Boot, saving 500+ developer hours.",
+        "Developed a Graph-RAG algorithm using Neo4j, outperforming traditional RAG vector search by 30%."
+      ]
+    },
+    {
+      "company": "Bits of Good",
+      "position": "Full-stack Developer (Team Lead)",
+      "location": "Atlanta, GA",
+      "start_date": "Aug 2023",
+      "end_date": "Dec 2023",
+      "responsibilities": [
+        "Led a team to create a web application for Southface employees, improving construction worker efficiency by 50%.",
+        "Managed a team of 5 developers, 2 designers, and collaborated with a project manager in weekly client meetings.",
+        "Engineered the app using Next.js, AWS RDS SQL, REST API, MongoDB, and Microsoft Azure Cloud Blob."
+      ]
+    },
+    {
+      "company": "Logicom",
+      "position": "Software Developer",
+      "location": "Atlanta, GA",
+      "start_date": "May 2023",
+      "end_date": "Aug 2023",
+      "responsibilities": [
+        "Implemented call service management software serving 5,000+ clients.",
+        "Reduced codebase by 50% by revamping legacy PHP code using Vue.js, NodeJS, CSS, and AWS."
+      ]
+    },
+    {
+      "company": "NCR",
+      "position": "Software Engineer Intern",
+      "location": "Atlanta, GA",
+      "start_date": "May 2022",
+      "end_date": "Aug 2022",
+      "responsibilities": [
+        "Developed a frontend settings page for NCR’s new Point-of-Sale software used by over 1,000 clients.",
+        "Integrated Apple Pay, Google Pay, and PayPal in the backend using FreedomPay APIs via Nest.js and GraphQL/REST API.",
+        "Built a full-stack Next.js + Python application for the NCR Hackathon, placing top 20%."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "TinyGen - LLM Coding Agent",
+      "technologies": [
+        "LangChain",
+        "Python",
+        "Kubernetes",
+        "Docker",
+        "FastAPI",
+        "NoSQL DB"
+      ],
+      "description": "Created a GenAI coding agent using LangChain that generates code pull requests with 75% accuracy on repos of any size. Designed a Streamlit UI and deployed to production using Google Kubernetes Engine, Docker, and Supabase DB."
+    },
+    {
+      "name": "Reinforcement Learning on Robot Simulations",
+      "technologies": ["Python", "Pytorch", "Numpy", "Pandas", "Matplotlib"],
+      "description": "Created YouTube tutorials (7k+ views) implementing Deep Q-Learning, Monte Carlo, and TD-Learning algorithms for robot simulations."
+    },
+    {
+      "name": "Computer Vision - Forecasting Popular Shoe Prices",
+      "technologies": ["Python", "Pytorch", "Matplotlib", "CUDA"],
+      "description": "Developed a custom image classification model with 82% accuracy for shoe price prediction, leveraging 5000 shoe images."
+    }
+  ],
+  "skills": {
+    "programming_languages": [
+      "Python",
+      "Java",
+      "C#",
+      "C",
+      "C++",
+      "SQL",
+      "JavaScript",
+      "TypeScript",
+      "HTML/CSS"
+    ],
+    "technologies": [
+      "Pytorch",
+      "Numpy",
+      "Seaborn",
+      "Matplotlib",
+      "Docker",
+      "Kubernetes",
+      "Pandas",
+      "Git",
+      "AWS",
+      "GCP",
+      "Azure"
+    ],
+    "frameworks_tools": [
+      "LangChain",
+      "LangGraph",
+      "React.js",
+      "Vue.js",
+      "Angular.js",
+      "MongoDB",
+      "DynamoDB",
+      "RestAPI",
+      "GraphQL"
+    ]
+  },
+  "location_preferences": ["Chicago", "New York", "Seattle", "San Francisco"]
+}
