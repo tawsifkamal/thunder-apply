@@ -23,6 +23,7 @@ class WorkdayDOMExtractor:
         if headless:
             chrome_options.add_argument("--headless")
         self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver.maximize_window()
         self.driver.implicitly_wait(5)  # Wait up to 5 seconds for elements to appear. There may be issues when using implicit and explicit waits.
         self.TIMEOUT = 3
 
@@ -99,19 +100,18 @@ class WorkdayDOMExtractor:
         time.sleep(0.5)
 
         # Scroll to and click the Sign In button
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", si_button)
+        # self.driver.execute_script("arguments[0].scrollIntoView(true);", si_button)
         # Hover over button to guarantee no interruptions when clicking the button
         # time.sleep(1)
         # hover = ActionChains(self.driver).move_to_element(si_button)
         # hover.perform()
-        # Hide overlaying elements
+        # Remove overlaying elements
         for si_overlay in si_overlays:
             print(f"Removing overlay: {si_overlay}")
             self.driver.execute_script("arguments[0].remove();", si_overlay)
         # Click on the element using JavaScript
-        self.driver.execute_script("arguments[0].click();", si_button)
-        # si_button.click()
-        time.sleep(2)
+        # self.driver.execute_script("arguments[0].click();", si_button)
+        si_button.click()
 
         """If Sign-In doesn't work, a pop-up will show up, and an account needs to be created"""
         """You will then automatically fill out the application instead of going back to the Sign-In screen"""
