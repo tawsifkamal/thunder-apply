@@ -5,6 +5,7 @@ import traceback
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (
@@ -66,7 +67,9 @@ class WorkdayDOMExtractor:
         sign_in_xpath = "//form[contains(@data-automation-id,'signIn')]"
         email_xpath = sign_in_xpath + "//input[contains(@data-automation-id, 'email')]"
         password_xpath = sign_in_xpath + "//input[contains(@data-automation-id, 'password')]"
-        si_xpath = sign_in_xpath + "//button[@type='submit']"
+        # si_xpath = sign_in_xpath + "//button[@type='submit']"
+        si_xpath = sign_in_xpath + "//button[contains(text(), 'Sign In')]"
+        si_overlay_xpath = si_xpath + "//preceding-sibling::div"
 
         # Wait until the elements are present and visible
         email_field = WebDriverWait(self.driver, self.TIMEOUT).until(
@@ -76,7 +79,10 @@ class WorkdayDOMExtractor:
             EC.visibility_of_element_located((By.XPATH, password_xpath))
         )
         si_button = WebDriverWait(self.driver, self.TIMEOUT).until(
-            EC.visibility_of_element_located((By.XPATH, si_xpath))
+            EC.element_to_be_clickable((By.XPATH, si_xpath))
+        )
+        si_overlays = WebDriverWait(self.driver, self.TIMEOUT).until(
+            EC.presence_of_all_elements_located((By.XPATH, si_overlay_xpath))
         )
 
         # Clear any existing text
@@ -94,16 +100,26 @@ class WorkdayDOMExtractor:
 
         # Scroll to and click the Sign In button
         self.driver.execute_script("arguments[0].scrollIntoView(true);", si_button)
-        # Wait a little longer to guarantee no interruptions when clicking the button
-        time.sleep(1)
-        si_button.click()
+        # Hover over button to guarantee no interruptions when clicking the button
+        # time.sleep(1)
+        # hover = ActionChains(self.driver).move_to_element(si_button)
+        # hover.perform()
+        # Hide overlaying elements
+        for si_overlay in si_overlays:
+            print(f"Removing overlay: {si_overlay}")
+            self.driver.execute_script("arguments[0].remove();", si_overlay)
+        # Click on the element using JavaScript
+        self.driver.execute_script("arguments[0].click();", si_button)
+        # si_button.click()
+        time.sleep(2)
 
         """If Sign-In doesn't work, a pop-up will show up, and an account needs to be created"""
+        """You will then automatically fill out the application instead of going back to the Sign-In screen"""
         si_error_xpath = "//div[@role='alert']"
         si_error_element = self.check_xpath_exists(si_error_xpath)
         if not si_error_element:
             # account_xpath = "//button[text()='Create Account']"
-            account_xpath = "//button[contains(text(), 'Create Account')]" # IDK if this works. If not, use above line
+            account_xpath = "//button[contains(text(), 'Create Account')]" # This actually works!
             element = WebDriverWait(self.driver, self.TIMEOUT).until(
                 EC.element_to_be_clickable((By.XPATH, account_xpath))
             )
@@ -111,15 +127,52 @@ class WorkdayDOMExtractor:
             element.click()
 
             """Create a new account"""
-            create_ac_xpath = "//form[contains(@data-automation-id, 'signInForm')]"
+            ac_form_xpath = "//form[contains(@data-automation-id, 'signInForm')]"
             element = WebDriverWait(self.driver, self.TIMEOUT).until(
-                EC.element_to_be_clickable((By.XPATH, account_xpath))
+                EC.element_to_be_clickable((By.XPATH, ac_form_xpath))
+            )
+            email_xpath = ac_form_xpath + "//input[contains(@data-automation-id, 'email')]"
+            password_xpath = ac_form_xpath + "//input[contains(@data-automation-id, 'password')]"
+            # si_xpath = ac_form_xpath + "//button[@type='submit']"
+            si_xpath = ac_form_xpath + "//button[contains(text(), 'Sign In')]"
+
+            ###############################################################################################################################################
+            # Wait until the elements are present and visible
+            email_field = WebDriverWait(self.driver, self.TIMEOUT).until(
+                EC.visibility_of_element_located((By.XPATH, email_xpath))
+            )
+            password_field = WebDriverWait(self.driver, self.TIMEOUT).until(
+                EC.visibility_of_element_located((By.XPATH, password_xpath))
+            )
+            si_button = WebDriverWait(self.driver, self.TIMEOUT).until(
+                EC.visibility_of_element_located((By.XPATH, si_xpath))
             )
 
+            # Clear any existing text
+            email_field.clear()
+            password_field.clear()
+
+            # Input the specified text
+            default_email = "tabbaa.abdulrahman1@gmail.com" ############################################################### RETURN TO THIS LATER #########################
+            default_password = "Runner400" ############################################################### RETURN TO THIS LATER #########################
+            email_field.send_keys(default_email)
+            password_field.send_keys(default_password)
+
+            # Wait briefly to ensure text is entered
+            time.sleep(0.5)
+
+            # Scroll to and click the Sign In button
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", si_button)
+            # Hover over button to guarantee no interruptions when clicking the button
+            time.sleep(1)
+            hover = ActionChains(self.driver).move_to_element(si_button)
+            hover.perform()
+            si_button.click()
+            ###############################################################################################################################################
 
         
-        
-        
+        else:
+            """If Sign-In does work"""
         
         
         
