@@ -1,0 +1,65 @@
+{
+  "firstName": "Abdulrahman",
+  "lastName": "Tabbaa",
+  "phoneNumber": "6787885328",
+  "email": "atabbaa6@gatech.edu",
+  "address": {
+    "street": "15 Riverbirch Way",
+    "city": "Sharpsburg",
+    "state": "GA",
+    "country": "USA",
+    "postalCode": "30277"
+  },
+  "gpa": "3.85",
+  "graduationDate": "2024-12",
+  "canWorkInUS": "Yes",
+  "requiresVisaSponsorship": "No",
+  "gender": "Male",
+  "racialBackground": "White",
+  "veteranStatus": "Not a Veteran",
+  "disabilityStatus": "No",
+  "locationPreferences": "Atlanta",
+  "password": "Runner400%",
+  "resume": {},
+  "workExperience": [
+    {
+      "jobTitle": "",
+      "company": "",
+      "location": "",
+      "startDate": "",
+      "endDate": "",
+      "currentlyWorking": false,
+      "roleDescription": ""
+    },
+    {
+      "jobTitle": "",
+      "company": "",
+      "location": "",
+      "startDate": "",
+      "endDate": "",
+      "currentlyWorking": false,
+      "roleDescription": ""
+    }
+  ],
+  "education": [
+    {
+      "school": "",
+      "degree": "",
+      "fieldOfStudy": "",
+      "startDate": "",
+      "endDate": ""
+    }
+  ],
+  "languages": [
+    {
+      "language": "",
+      "proficiency": ""
+    },
+    {
+      "language": "",
+      "proficiency": ""
+    }
+  ],
+  "skills": "C++, Java, Python, React",
+  "websites": []
+}
