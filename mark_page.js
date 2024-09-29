@@ -47,7 +47,6 @@ function markPage() {
       var textualContent = element.textContent.trim().replace(/\s{2,}/g, " ");
       var elementType = element.tagName.toLowerCase();
       var ariaLabel = element.getAttribute("aria-label") || "";
-      var role = element.getAttribute("role") || ""; // Capture ARIA role
 
       var rects = [...element.getClientRects()]
         .filter((bb) => {
@@ -81,25 +80,19 @@ function markPage() {
           element.tagName === "SELECT" ||
           element.tagName === "BUTTON" ||
           element.tagName === "A" ||
-          element.onclick != null || // Elements with an onclick handler
-          window.getComputedStyle(element).cursor == "pointer" || // Interactive by cursor style
+          element.onclick != null ||
+          window.getComputedStyle(element).cursor == "pointer" ||
           element.tagName === "IFRAME" ||
-          element.tagName === "VIDEO" ||
-          element.getAttribute("role") === "button" || // ARIA role as button
-          element.getAttribute("role") === "textbox" || // ARIA role as textbox/input
-          element.getAttribute("role") === "checkbox" || // ARIA role as checkbox
-          element.getAttribute("role") === "link" || // ARIA role as link
-          role.includes("button") || // Catching any custom components with "button" in role
-          role.includes("input"), // Catching custom input-like roles
+          element.tagName === "VIDEO",
         area,
         rects,
         text: textualContent,
         type: elementType,
         ariaLabel: ariaLabel,
-        role: role, // Add role to the returned data
       };
     })
     .filter((item) => item.include && item.area >= 20);
+
   // Only keep inner clickable items
   items = items.filter(
     (x) => !items.some((y) => x.element.contains(y.element) && !(x == y))
