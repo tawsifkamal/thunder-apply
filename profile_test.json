@@ -15,51 +15,42 @@
   "canWorkInUS": "Yes",
   "requiresVisaSponsorship": "No",
   "gender": "Male",
-  "racialBackground": "White",
-  "veteranStatus": "Not a Veteran",
+  "racialBackground": "Two or More Races (Not Hispanic or Latino)",
+  "veteranStatus": "Veteran",
   "disabilityStatus": "No",
-  "locationPreferences": "Atlanta",
-  "password": "Runner400%",
+  "locationPreferences": "ATl",
+  "password": "bdsjaY6$",
   "resume": {},
   "workExperience": [
     {
-      "jobTitle": "",
-      "company": "",
-      "location": "",
-      "startDate": "",
-      "endDate": "",
+      "jobTitle": "Intern",
+      "company": "Apple",
+      "location": "sdbi",
+      "startDate": "2024-10",
+      "endDate": "2024-11",
       "currentlyWorking": false,
-      "roleDescription": ""
+      "roleDescription": " eiruw er ube"
     },
     {
-      "jobTitle": "",
-      "company": "",
-      "location": "",
-      "startDate": "",
-      "endDate": "",
+      "jobTitle": "Job",
+      "company": "sduib",
+      "location": "uign",
+      "startDate": "2023-01",
+      "endDate": "2023-07",
       "currentlyWorking": false,
-      "roleDescription": ""
+      "roleDescription": "asjcvk"
     }
   ],
   "education": [
     {
-      "school": "",
-      "degree": "",
-      "fieldOfStudy": "",
-      "startDate": "",
-      "endDate": ""
+      "school": "Georgia Institute of Technology",
+      "degree": "Bachelors",
+      "fieldOfStudy": "Electrical Engineering",
+      "startDate": "2024-01",
+      "endDate": "2024-12"
     }
   ],
-  "languages": [
-    {
-      "language": "",
-      "proficiency": ""
-    },
-    {
-      "language": "",
-      "proficiency": ""
-    }
-  ],
-  "skills": "C++, Java, Python, React",
+  "languages": [],
+  "skills": "C++, Python, Java, React",
   "websites": []
 }

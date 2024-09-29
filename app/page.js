@@ -33,6 +33,7 @@ export default function Form() {
     languages: [],
     skills: '',
     websites: [],
+    url: '',
   });
 
   // Dynamic fields toggle
@@ -42,7 +43,7 @@ export default function Form() {
   const [showSkills, setShowSkills] = useState(false);
   const [showWebsites, setShowWebsites] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e, index=null) => {
     const { name, value, files } = e.target;
     if (name === 'resume') {
       setFormData({ ...formData, [name]: files[0] });
@@ -50,6 +51,36 @@ export default function Form() {
       setFormData({
         ...formData,
         address: { ...formData.address, [name.split('.')[1]]: value },
+      });
+    } else if (name.includes('workExperience')) {
+      const updatedWorkExperience = [...formData.workExperience];
+      updatedWorkExperience[index] = {
+        ...updatedWorkExperience[index],
+        [name.split('.')[1]]: value,
+      };
+      setFormData({
+        ...formData,
+        workExperience: updatedWorkExperience,
+      });
+    } else if (name.includes('education')) {
+      const updatedEducation = [...formData.education];
+      updatedEducation[index] = {
+        ...updatedEducation[index],
+        [name.split('.')[1]]: value,
+      };
+      setFormData({
+        ...formData,
+        education: updatedEducation,
+      });
+    } else if (name.includes('languages')) {
+      const updatedLanguages = [...formData.languages];
+      updatedLanguages[index] = {
+        ...updatedLanguages[index],
+        [name.split('.')[1]]: value,
+      };
+      setFormData({
+        ...formData,
+        languages: updatedLanguages,
       });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -82,8 +113,18 @@ export default function Form() {
   const addWorkExperience = () => {
     setFormData({
       ...formData,
-      workExperience: [...formData.workExperience, { jobTitle: '', company: '', location: '', startDate: '', endDate: '', currentlyWorking: false, roleDescription: '' }]
+      workExperience: [...formData.workExperience, {jobTitle: '', company: '', location: '', startDate: '', endDate: '', currentlyWorking: false, roleDescription: ''}]
     });
+    setShowWorkExperience(true)
+  };
+
+  // Function to remove new work experience
+  const removeWorkExperience = () => {
+    setFormData({
+      ...formData,
+      workExperience: [{jobTitle: '', company: '', location: '', startDate: '', endDate: '', currentlyWorking: false, roleDescription: ''}]
+    });
+    setShowWorkExperience(false)
   };
 
   // Function to add new education
@@ -92,6 +133,15 @@ export default function Form() {
       ...formData,
       education: [...formData.education, { school: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '' }]
     });
+    setShowEducation(true)
+  };
+  // Function to remove new education
+  const removeEducation = () => {
+    setFormData({
+      ...formData,
+      education: [{ school: '', degree: '', fieldOfStudy: '', startDate: '', endDate: '' }]
+    });
+    setShowEducation(false)
   };
 
   // Function to add new language
@@ -100,6 +150,15 @@ export default function Form() {
       ...formData,
       languages: [...formData.languages, { language: '', proficiency: '' }]
     });
+    setShowLanguages(true)
+  };
+  // Function to remove new language
+  const removeLanguage = () => {
+    setFormData({
+      ...formData,
+      languages: [{ language: '', proficiency: '' }]
+    });
+    setShowLanguages(false)
   };
 
   // Function to add website
@@ -108,6 +167,15 @@ export default function Form() {
       ...formData,
       websites: [...formData.websites, '']
     });
+    setShowWebsites(true)
+  };
+  // Function to remove website
+  const removeWebsite = () => {
+    setFormData({
+      ...formData,
+      websites: ['']
+    });
+    setShowWebsites(false)
   };
 
   return (
@@ -315,51 +383,51 @@ export default function Form() {
 
       {/* Work Experience Section */}
       <div>
-        <button type="button" onClick={() => setShowWorkExperience(!showWorkExperience)}>Add Work Experience</button>
+        <button type="button" onClick={addWorkExperience}>Add Work Experience</button>
         {showWorkExperience && (
           <>
             {formData.workExperience.map((exp, index) => (
               <div key={index}>
                 <label>Job Title:</label>
-                <input type="text" name={`workExperience[${index}].jobTitle`} required />
+                <input type="text" name={`workExperience.jobTitle`} value={exp.jobTitle} onChange={(e) => handleChange(e, index)} required />
 
                 <label>Company:</label>
-                <input type="text" name={`workExperience[${index}].company`} required />
+                <input type="text" name={`workExperience.company`} value={exp.company} onChange={(e) => handleChange(e, index)} required />
 
                 <label>Location:</label>
-                <input type="text" name={`workExperience[${index}].location`} />
+                <input type="text" name={`workExperience.location`} value={exp.location} onChange={(e) => handleChange(e, index)} />
 
                 <label>Start Date:</label>
-                <input type="month" name={`workExperience[${index}].startDate`} required />
+                <input type="month" name={`workExperience.startDate`} value={exp.startDate} onChange={(e) => handleChange(e, index)} required />
 
                 <label>End Date:</label>
-                <input type="month" name={`workExperience[${index}].endDate`} />
+                <input type="month" name={`workExperience.endDate`} value={exp.endDate} onChange={(e) => handleChange(e, index)} />
 
                 <label>
-                  <input type="checkbox" name={`workExperience[${index}].currentlyWorking`} /> I currently work here
+                  <input type="checkbox" name={`workExperience.currentlyWorking`} value={exp.currentlyWorking} onChange={(e) => handleChange(e, index)} /> I currently work here
                 </label>
 
                 <label>Role Description:</label>
-                <textarea name={`workExperience[${index}].roleDescription`} />
+                <textarea name={`workExperience.roleDescription`} value={exp.roleDescription} onChange={(e) => handleChange(e, index)} />
               </div>
             ))}
-            <button type="button" onClick={addWorkExperience}>Add More Work Experience</button>
+            <button type="button" onClick={removeWorkExperience}>Remove All Work Experience</button>
           </>
         )}
       </div>
 
       {/* Education Section */}
       <div>
-        <button type="button" onClick={() => setShowEducation(!showEducation)}>Add Education</button>
+        <button type="button" onClick={addEducation}>Add Education</button>
         {showEducation && (
           <>
             {formData.education.map((edu, index) => (
               <div key={index}>
                 <label>School/University:</label>
-                <input type="text" name={`education[${index}].school`} required />
+                <input type="text" name={`education.school`} value={edu.school} onChange={(e) => handleChange(e, index)} required />
 
                 <label>Degree:</label>
-                <select name={`education[${index}].degree`} required>
+                <select name={`education.degree`} onChange={(e) => handleChange(e, index)} required>
                   <option value="GED">GED</option>
                   <option value="High School">High School</option>
                   <option value="Associates">Associates</option>
@@ -369,32 +437,32 @@ export default function Form() {
                 </select>
 
                 <label>Field of Study:</label>
-                <input type="text" name={`education[${index}].fieldOfStudy`} required />
+                <input type="text" name={`education.fieldOfStudy`} value={edu.fieldOfStudy} onChange={(e) => handleChange(e, index)} required />
 
                 <label>Start Date:</label>
-                <input type="month" name={`education[${index}].startDate`} required />
+                <input type="month" name={`education.startDate`} value={edu.startDate} onChange={(e) => handleChange(e, index)} required />
 
                 <label>End Date:</label>
-                <input type="month" name={`education[${index}].endDate`} required />
+                <input type="month" name={`education.endDate`} value={edu.endDate} onChange={(e) => handleChange(e, index)} required />
               </div>
             ))}
-            <button type="button" onClick={addEducation}>Add More Education</button>
+            <button type="button" onClick={removeEducation}>Remove All Education</button>
           </>
         )}
       </div>
 
       {/* Languages Section */}
       <div>
-        <button type="button" onClick={() => setShowLanguages(!showLanguages)}>Add Languages</button>
+        <button type="button" onClick={addLanguage}>Add Languages</button>
         {showLanguages && (
           <>
             {formData.languages.map((lang, index) => (
               <div key={index}>
                 <label>Language:</label>
-                <input type="text" name={`languages[${index}].language`} required />
+                <input type="text" name={`languages.language`} value={lang.language} onChange={(e) => handleChange(e, index)} required />
 
                 <label>Proficiency:</label>
-                <select name={`languages[${index}].proficiency`} required>
+                <select name={`languages.proficiency`} onChange={(e) => handleChange(e, index)} required>
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
                   <option value="Advanced">Advanced</option>
@@ -402,14 +470,14 @@ export default function Form() {
                 </select>
               </div>
             ))}
-            <button type="button" onClick={addLanguage}>Add More Languages</button>
+            <button type="button" onClick={removeLanguage}>Remove All Languages</button>
           </>
         )}
       </div>
 
       {/* Skills Section */}
       <div>
-        <button type="button" onClick={() => setShowSkills(!showSkills)}>Add Skills</button>
+        <button type="button" onClick={() => setShowSkills(true)}>Add Skills</button>
         {showSkills && (
           <div>
             <label>Skills (separated by commas):</label>
@@ -420,26 +488,27 @@ export default function Form() {
 
       {/* Websites Section */}
       <div>
-        <button type="button" onClick={() => setShowWebsites(!showWebsites)}>Add Websites</button>
+        <button type="button" onChange={(e) => handleChange(e, index)} onClick={addWebsite}>Add Websites</button>
         {showWebsites && (
-          <>
-            {formData.websites.map((site, index) => (
               <div key={index}>
                 <label>Website:</label>
                 <input
                   type="url"
-                  name={`websites[${index}]`}
+                  name={`websites`}
                   pattern="https?://.*"
                   title="Enter a valid URL"
+                  onChange={handleChange}
+                  value={`formData.websites[${index}]`}
                   required
                 />
               </div>
-            ))}
-            <button type="button" onClick={addWebsite}>Add More Websites</button>
-          </>
-        )}
+            )}
+            <button type="button" onClick={removeWebsite}>Remove All Websites</button>
       </div>
-
+      <div>
+        <label>Job Application URL:</label>
+        <input type="text" name="url" value={formData.url} onChange={handleChange} required />
+      </div>
       <button type="submit">Submit</button>
     </form>
   );
