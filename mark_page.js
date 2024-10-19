@@ -28,10 +28,10 @@ function unmarkPage() {
   labels = [];
 }
 
-function markPage() {
+function markPage(indexCounter) {
   unmarkPage();
 
-  var bodyRect = document.body.getBoundingClientRect();
+  var bodyRect = document.body.getBoundingClientRect(); // gets the bounding boxes for the body element
 
   var items = Array.prototype.slice
     .call(document.querySelectorAll("*"))
@@ -44,6 +44,7 @@ function markPage() {
         document.documentElement.clientHeight || 0,
         window.innerHeight || 0
       );
+
       var textualContent = element.textContent.trim().replace(/\s{2,}/g, " ");
       var elementType = element.tagName.toLowerCase();
       var ariaLabel = element.getAttribute("aria-label") || "";
@@ -54,7 +55,14 @@ function markPage() {
           var center_y = bb.top + bb.height / 2;
           var elAtCenter = document.elementFromPoint(center_x, center_y);
 
-          return elAtCenter === element || element.contains(elAtCenter);
+          // Check if the element is within the viewport
+          var isVisible =
+            bb.bottom > 0 && bb.top < vh && bb.right > 0 && bb.left < vw;
+
+          return (
+            isVisible &&
+            (elAtCenter === element || element.contains(elAtCenter))
+          );
         })
         .map((bb) => {
           const rect = {
@@ -98,6 +106,12 @@ function markPage() {
     (x) => !items.some((y) => x.element.contains(y.element) && !(x == y))
   );
 
+  items.forEach((item) => {
+    if (item.rects.length > 1) {
+      item.rects.pop();
+    }
+  });
+  // items = uniqueItems;
   // Function to generate random colors
   function getRandomColor() {
     var letters = "0123456789ABCDEF";
@@ -109,7 +123,7 @@ function markPage() {
   }
 
   // Lets create a floating border on top of these elements that will always be visible
-  items.forEach(function (item, index) {
+  items.forEach(function (item) {
     item.rects.forEach((bbox) => {
       newElement = document.createElement("div");
       var borderColor = getRandomColor();
@@ -126,7 +140,7 @@ function markPage() {
 
       // Add floating label at the corner
       var label = document.createElement("span");
-      label.textContent = index;
+      label.textContent = indexCounter;
       label.style.position = "absolute";
       // These we can tweak if we want
       label.style.top = "-19px";
@@ -143,15 +157,36 @@ function markPage() {
       labels.push(newElement);
       // item.element.setAttribute("-ai-label", label.textContent);
     });
+    indexCounter += 1;
   });
   const coordinates = items.flatMap((item) =>
-    item.rects.map(({ left, top, width, height }) => ({
-      x: (left + left + width) / 2,
-      y: (top + top + height) / 2,
-      type: item.type,
-      text: item.text,
-      ariaLabel: item.ariaLabel,
-    }))
+    item.rects.map(({ left, top, width, height }) => {
+      const id = item.element.id ? item.element.id : null;
+      const labelElement =
+        item.element.tagName === "INPUT"
+          ? document.querySelector(`label[for="${id}"]`)
+          : null;
+      const labelText = labelElement ? labelElement.textContent.trim() : null;
+
+      // Get surrounding text for input elements
+      let surroundingText = null;
+      if (item.element.tagName === "INPUT") {
+        const parentText = item.element.parentElement
+          ? item.element.parentElement.textContent.trim()
+          : "";
+        surroundingText = parentText || labelText || item.text;
+      }
+      return {
+        x: (left + left + width) / 2,
+        y: (top + top + height) / 2,
+        type: item.type,
+        text: item.text,
+        id: id,
+        labelText: labelText,
+        ariaLabel: item.ariaLabel,
+        surroundingText: surroundingText,
+      };
+    })
   );
-  return coordinates;
+  return { coordinates: coordinates, indexCounter: indexCounter };
 }
