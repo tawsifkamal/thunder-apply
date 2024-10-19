@@ -28,10 +28,10 @@ function unmarkPage() {
   labels = [];
 }
 
-function markPage(indexCounter) {
+function markPage() {
   unmarkPage();
 
-  var bodyRect = document.body.getBoundingClientRect(); // gets the bounding boxes for the body element
+  var bodyRect = document.body.getBoundingClientRect();
 
   var items = Array.prototype.slice
     .call(document.querySelectorAll("*"))
@@ -44,7 +44,6 @@ function markPage(indexCounter) {
         document.documentElement.clientHeight || 0,
         window.innerHeight || 0
       );
-
       var textualContent = element.textContent.trim().replace(/\s{2,}/g, " ");
       var elementType = element.tagName.toLowerCase();
       var ariaLabel = element.getAttribute("aria-label") || "";
@@ -55,14 +54,7 @@ function markPage(indexCounter) {
           var center_y = bb.top + bb.height / 2;
           var elAtCenter = document.elementFromPoint(center_x, center_y);
 
-          // Check if the element is within the viewport
-          var isVisible =
-            bb.bottom > 0 && bb.top < vh && bb.right > 0 && bb.left < vw;
-
-          return (
-            isVisible &&
-            (elAtCenter === element || element.contains(elAtCenter))
-          );
+          return elAtCenter === element || element.contains(elAtCenter);
         })
         .map((bb) => {
           const rect = {
@@ -106,12 +98,6 @@ function markPage(indexCounter) {
     (x) => !items.some((y) => x.element.contains(y.element) && !(x == y))
   );
 
-  items.forEach((item) => {
-    if (item.rects.length > 1) {
-      item.rects.pop();
-    }
-  });
-  // items = uniqueItems;
   // Function to generate random colors
   function getRandomColor() {
     var letters = "0123456789ABCDEF";
@@ -123,7 +109,7 @@ function markPage(indexCounter) {
   }
 
   // Lets create a floating border on top of these elements that will always be visible
-  items.forEach(function (item) {
+  items.forEach(function (item, index) {
     item.rects.forEach((bbox) => {
       newElement = document.createElement("div");
       var borderColor = getRandomColor();
@@ -140,11 +126,11 @@ function markPage(indexCounter) {
 
       // Add floating label at the corner
       var label = document.createElement("span");
-      label.textContent = indexCounter;
+      label.textContent = index;
       label.style.position = "absolute";
       // These we can tweak if we want
       label.style.top = "-19px";
-      label.style.right = "0px";
+      label.style.left = "0px";
       label.style.background = borderColor;
       // label.style.background = "black";
       label.style.color = "white";
@@ -157,76 +143,15 @@ function markPage(indexCounter) {
       labels.push(newElement);
       // item.element.setAttribute("-ai-label", label.textContent);
     });
-    indexCounter += 1;
   });
   const coordinates = items.flatMap((item) =>
-    item.rects.map(({ left, top, width, height }) => {
-      const id = item.element.id ? item.element.id : null;
-      const name = item.element.name ? item.element.name : null;
-      const labelElement =
-        item.element.tagName === "INPUT"
-          ? document.querySelector(`label[for="${id}"]`)
-          : null;
-      const labelText = labelElement ? labelElement.textContent.trim() : null;
-
-      // Get surrounding text for input and select elements
-      // Get surrounding text for input and select elements
-      let surroundingText = null;
-      if (item.element.tagName === "INPUT") {
-        const parentText = item.element.parentElement
-          ? item.element.parentElement.textContent.trim()
-          : "";
-
-        surroundingText = parentText || labelText || item.text;
-      } else if (item.element.tagName === "SELECT") {
-        // Traverse up the DOM to find text up to 3 levels above, excluding text within OPTION tags
-        let currentElement = item.element.parentElement;
-        let levels = 0;
-        while (currentElement && levels < 3) {
-          // Collect text content from the current element, excluding OPTION tags
-          const textNodes = Array.from(currentElement.childNodes).filter(
-            (node) =>
-              node.nodeType === Node.TEXT_NODE || node.tagName !== "OPTION"
-          );
-
-          const parentText = textNodes
-            .map((node) => node.textContent.trim())
-            .filter((text) => text.length > 0)
-            .join(" ");
-
-          if (parentText) {
-            surroundingText = parentText;
-          }
-
-          currentElement = currentElement.parentElement;
-          levels++;
-        }
-
-        // If no surrounding text is found, fallback to labelText
-        surroundingText = surroundingText || labelText;
-      }
-
-      // Get options for select elements
-      let selectOptions = null;
-      if (item.element.tagName === "SELECT") {
-        selectOptions = Array.from(item.element.options).map(
-          (option) => option.text
-        );
-      }
-
-      return {
-        x: (left + left + width) / 2,
-        y: (top + top + height) / 2,
-        type: item.type,
-        text: item.text,
-        id: id,
-        name: name,
-        labelText: labelText,
-        ariaLabel: item.ariaLabel,
-        surroundingText: surroundingText,
-        selectOptions: selectOptions,
-      };
-    })
+    item.rects.map(({ left, top, width, height }) => ({
+      x: (left + left + width) / 2,
+      y: (top + top + height) / 2,
+      type: item.type,
+      text: item.text,
+      ariaLabel: item.ariaLabel,
+    }))
   );
-  return { coordinates: coordinates, indexCounter: indexCounter };
+  return coordinates;
 }
