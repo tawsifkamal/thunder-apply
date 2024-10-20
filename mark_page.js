@@ -92,7 +92,7 @@ function markPage(indexCounter) {
           window.getComputedStyle(element).cursor === "pointer" ||
           element.tagName === "IFRAME" ||
           element.tagName === "VIDEO" ||
-          element.classList.contains("pac-item"), 
+          element.classList.contains("pac-item"),
         area,
         rects,
         text: textualContent,
@@ -126,8 +126,8 @@ function markPage(indexCounter) {
   // Lets create a floating border on top of these elements that will always be visible
   items.forEach(function (item) {
     item.rects.forEach((bbox) => {
-      newElement = document.createElement("div");
-      var borderColor = getRandomColor();
+      const newElement = document.createElement("div");
+      const borderColor = getRandomColor();
       newElement.style.outline = `2px dashed ${borderColor}`;
       newElement.style.position = "fixed";
       newElement.style.left = bbox.left + "px";
@@ -137,17 +137,24 @@ function markPage(indexCounter) {
       newElement.style.pointerEvents = "none";
       newElement.style.boxSizing = "border-box";
       newElement.style.zIndex = 2147483647;
-      // newElement.style.background = `${borderColor}80`;
 
       // Add floating label at the corner
-      var label = document.createElement("span");
+      const label = document.createElement("span");
       label.textContent = indexCounter;
       label.style.position = "absolute";
-      // These we can tweak if we want
-      label.style.top = "-19px";
-      label.style.right = "0px";
+
+      // Check if the element is a radio button
+      if (item.element.tagName === "INPUT" && item.element.type === "radio") {
+        // Position the label on the left side for radio buttons
+        label.style.left = "-25px"; // Adjust as needed for padding
+        label.style.top = "0px"; // Align vertically with the radio button
+      } else {
+        // Default position for other elements
+        label.style.top = "-19px";
+        label.style.right = "0px";
+      }
+
       label.style.background = borderColor;
-      // label.style.background = "black";
       label.style.color = "white";
       label.style.padding = "2px 4px";
       label.style.fontSize = "12px";
@@ -156,7 +163,6 @@ function markPage(indexCounter) {
 
       document.body.appendChild(newElement);
       labels.push(newElement);
-      // item.element.setAttribute("-ai-label", label.textContent);
     });
     indexCounter += 1;
   });
