@@ -89,9 +89,10 @@ function markPage(indexCounter) {
           element.tagName === "BUTTON" ||
           element.tagName === "A" ||
           element.onclick != null ||
-          window.getComputedStyle(element).cursor == "pointer" ||
+          window.getComputedStyle(element).cursor === "pointer" ||
           element.tagName === "IFRAME" ||
-          element.tagName === "VIDEO",
+          element.tagName === "VIDEO" ||
+          element.classList.contains("pac-item"), 
         area,
         rects,
         text: textualContent,
@@ -214,6 +215,16 @@ function markPage(indexCounter) {
         );
       }
 
+      let placeholder = null;
+
+      // Check for INPUT and SELECT elements to get the placeholder
+      if (
+        item.element.tagName === "INPUT" ||
+        item.element.tagName === "SELECT"
+      ) {
+        placeholder = item.element.getAttribute("placeholder") || "";
+      }
+
       return {
         x: (left + left + width) / 2,
         y: (top + top + height) / 2,
@@ -225,6 +236,7 @@ function markPage(indexCounter) {
         ariaLabel: item.ariaLabel,
         surroundingText: surroundingText,
         selectOptions: selectOptions,
+        placeholder: placeholder,
       };
     })
   );
