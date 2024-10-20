@@ -145,5 +145,10 @@
       "GraphQL"
     ]
   },
-  "location_preferences": ["Chicago", "New York", "Seattle", "San Francisco"]
+  "location_preferences": ["Chicago", "New York", "Seattle", "San Francisco"],
+  "links": {
+    "github": "https://github.com/tawsifkamal",
+    "linkedin": "https://www.linkedin.com/in/tawsif-kamal/",
+    "website": "https://www.tawsifkamal.com"
+  }
 }
