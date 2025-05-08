@@ -7,6 +7,7 @@ import asyncio
 from typing import Callable, Any, Optional
 
 from browser_use.agent.service import Agent, AgentStepInfo
+from langchain_core.messages import HumanMessage
 
 
 class InteractiveAgent(Agent):
@@ -68,10 +69,46 @@ class InteractiveAgent(Agent):
                       "Switching to manual mode. Use enable_agent() to resume.")
                 self.disable_agent() # must re-enable in fallback
 
+    # Methods for fine-grained interactive control
+    async def step_with_prompt(
+        self,
+        prompt: str,
+        step_info: Optional[AgentStepInfo] = None,
+    ) -> None:
+        """
+        Inject a custom prompt as a HumanMessage and execute one agent step.
+
+        Args:
+            prompt: The human prompt to add before stepping.
+            step_info: Optional step information for metadata.
+        """
+        # Add custom prompt to the conversation
+        self._message_manager._add_message_with_tokens(HumanMessage(content=prompt))
+        # Ensure AI-driven step runs regardless of manual mode
+        was_enabled = self._agent_enabled
+        self.enable_agent()
+        try:
+            await super().step(step_info)
+        finally:
+            # Restore manual mode if it was previously disabled
+            if not was_enabled:
+                self.disable_agent()
+
+    def add_task(self, new_task: str) -> None:
+        """
+        Add or update the agent's ultimate task mid-run.
+
+        Args:
+            new_task: The new task description.
+        """
+        # Delegate to the message manager and update task
+        self._message_manager.add_new_task(new_task)
+        self.task = new_task
+
     async def close(self) -> None:
         """
         Close all resources.
-        This method is not present in . Monitor repo for updates.
+        This method is not present in PyPI. Monitor repo for updates.
         """
         import gc
         import logging

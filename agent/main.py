@@ -19,7 +19,6 @@ async def main():
     # )
     # result = await agent.run()
     # print(result.extracted_content())
-    # BrowserContext.
     agent = InteractiveAgent(
         task="Apply for the job which we have already logged in for now",
         llm=llm,

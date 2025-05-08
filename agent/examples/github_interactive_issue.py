@@ -45,7 +45,7 @@ async def manual_fallback(agent: InteractiveAgent) -> None:
 async def main():
     # Load env for repo/credentials
     load_dotenv()
-    repo = os.getenv('GITHUB_REPO') or input('GitHub repo (owner/repo): ')
+    repo = os.getenv('GITHUB_REPO')
     issue_title = 'Test issue via fallback'
     issue_body = 'This issue was created after manual fallback.'
 
