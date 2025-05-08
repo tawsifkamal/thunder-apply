@@ -105,10 +105,23 @@ class InteractiveAgent(Agent):
         self._message_manager.add_new_task(new_task)
         self.task = new_task
 
+    async def get_agent_current_page(self):
+        """
+        Convenience helper: return the current Playwright page the agent is working with.
+
+        Uses browser_context.get_agent_current_page() if available, else falls back to get_current_page().
+
+        This method is not present in PyPI. Monitor package for updates.
+        """
+        ctx = self.browser_context
+        if hasattr(ctx, 'get_agent_current_page'):
+            return await ctx.get_agent_current_page()
+        return await ctx.get_current_page()
+
     async def close(self) -> None:
         """
         Close all resources.
-        This method is not present in PyPI. Monitor repo for updates.
+        This method is not present in PyPI. Monitor package for updates.
         """
         import gc
         import logging
