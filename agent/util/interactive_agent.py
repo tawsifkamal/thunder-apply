@@ -77,6 +77,8 @@ class InteractiveAgent(Agent):
     ) -> None:
         """
         Inject a custom prompt as a HumanMessage and execute one agent step.
+        Keeping here for now, but do not use.
+        Does not maintain agent state well.
 
         Args:
             prompt: The human prompt to add before stepping.
@@ -139,3 +141,58 @@ class InteractiveAgent(Agent):
 
         except Exception as e:
             logger.error(f'Error during cleanup: {e}')
+
+    async def run_ai_task(
+        self,
+        task: str,
+        success_condition: Callable[['InteractiveAgent'], bool],
+        max_steps: int = 10,
+        step_info: Optional[AgentStepInfo] = None
+    ) -> bool:
+        """
+        Let AI complete a specific task fully before returning control.
+        Takes in a callback function, runs event loop and returns if task is completed according to callback.
+        
+        Args:
+            task: The task description for the AI
+            success_condition: A function that takes the agent and returns True if the task is complete
+            max_steps: Maximum number of steps to try completing the task
+            step_info: Optional step information for metadata
+        
+        Returns:
+            bool: True if task was completed successfully, False otherwise
+        """
+        print(f"🤖 AI Task: {task}")
+        self.enable_agent()
+        self.add_task(task)
+        
+        # Run steps until task is complete or max steps reached
+        for step in range(max_steps):
+            await self.step(step_info)
+            
+            # Check if task is complete
+            if await success_condition(self):
+                print("✅ AI task completed successfully")
+                self.disable_agent()
+                return True
+                
+            # If we hit max steps, task might be incomplete
+            if step == max_steps - 1:
+                print("⚠️ AI task may be incomplete - hit max steps")
+                self.disable_agent()
+                return False
+        
+        self.disable_agent()
+        return False
+
+    async def run_single_step(self, task: str, step_info: Optional[AgentStepInfo] = None) -> None:
+        """
+        Run a single AI step with a specific task.
+        This is more reliable than step_with_prompt as it maintains agent state better.
+        
+        Args:
+            task: The task description for the AI
+            step_info: Optional step information for metadata
+        """
+        self.add_task(task)
+        await self.step(step_info)
