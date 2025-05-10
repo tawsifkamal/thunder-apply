@@ -9,9 +9,6 @@ import asyncio
 from dotenv import load_dotenv
 from getpass import getpass
 
-# Ensure the project root is on PYTHONPATH
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from langchain_openai import ChatOpenAI
 from ..util.interactive_agent import InteractiveAgent
 
@@ -65,8 +62,7 @@ async def manual_login(agent: InteractiveAgent) -> None:
     # Let AI handle the login button click
     print("Letting AI handle the login button click...")
     agent.enable_agent()
-    agent.add_task("Click the Sign In button on the login form")
-    await agent.step()
+    await agent.run_single_step("Click the Sign In button on the login form") #before i did agent.add_task and agent.step
     
     # Switch back to manual control
     agent.disable_agent()
@@ -112,6 +108,62 @@ async def is_job_details_page(agent: InteractiveAgent) -> bool:
 
     return True
 
+#TODO: this works for any xpath, make this constant and work for any file input
+#      refactor later
+async def upload_resume(page) -> bool:
+    """
+    Manually handle resume upload using Playwright's file input functionality.
+    Looks for resume in the same directory as the script first, then falls back to environment variable or prompt.
+    
+    Args:
+        page: The Playwright page object
+    
+    Returns:
+        bool: True if upload was successful, False otherwise
+    """
+    try:
+        print("🔧 Manual: Handling resume upload...")
+        
+        x_path_pdf = '//*[@id="root"]/div/div/div[2]/div/main/div/div[3]/div[1]/div[2]/p/div/div/div[1]/div[2]/div[1]/input'
+        file_input = page.locator(x_path_pdf)
+        # await file_input.wait_for(state='visible', timeout=5000)
+        print("found file input at: ", file_input)
+        
+        # First try to find resume in the same directory as the script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        local_resume = os.path.join(script_dir, "resume.pdf")
+        
+        # Get the resume path, trying different sources in order:
+        # 1. Local directory
+        # 2. Environment variable
+        # 3. User input
+        if os.path.exists(local_resume):
+            resume_path = local_resume
+            print("📄 Found resume in script directory")
+        else:
+            resume_path = os.getenv('RESUME_PATH')
+            if not resume_path:
+                resume_path = input('Enter the full path to your resume file: ')
+            
+        if not os.path.exists(resume_path):
+            print(f"⚠️ Resume file not found at: {resume_path}")
+            return False
+            
+        print(f"📄 Uploading resume from: {resume_path}")
+        
+        # Set the file input value
+        await file_input.set_input_files(resume_path)
+        
+        # Wait for upload to complete
+        await page.wait_for_timeout(2000)  # Wait for upload to start
+
+        return True
+        
+            
+    except Exception as e:
+        print(f"⚠️ Error during resume upload: {e}")
+        return False
+
 async def main():
     # Initialize LLM
     llm = ChatOpenAI(model='gpt-4o', temperature=0.0)
@@ -144,16 +196,37 @@ async def main():
     task_success = await agent.run_ai_task(
         task="Search for any internships, click on the first relevant position, click the Apply button, and select 'Apply with Resume' to start the actual application process",
         success_condition=is_job_details_page,
-        max_steps=20  # Increased steps since we have more actions to complete
+        max_steps=20
     )
     
     if not task_success:
         print("⚠️ AI couldn't complete the task. You may need to manually select a job and start the application process.")
-    else:
-        print("✅ Successfully found a job and started the application process")
+        await agent.close()
+        return
+        
+    print("✅ Successfully found a job and started the application process")
+    
+    # Handle resume upload manually
+    upload_success = await upload_resume(page)
+    if not upload_success:
+        print("⚠️ Resume upload failed. You may need to upload it manually.")
+        await agent.close()
+        return
+        
+    print("✅ Resume uploaded successfully")
+    
+    
+    #TODO: Implement the rest of the application form
+    #      Perhaps manual for known fields, ai to check for the rest
+    agent.enable_agent()
+    await agent.run_ai_task(
+        task="Complete the rest of the application form",
+        success_condition=lambda agent: False,  # We'll need to define a proper success condition
+        max_steps=30
+    )
     
     # Clean up
-    await page.wait_for_timeout(100000)
+    await page.wait_for_timeout(1000000) #for sake of testing
     await agent.close()
 
 if __name__ == '__main__':
