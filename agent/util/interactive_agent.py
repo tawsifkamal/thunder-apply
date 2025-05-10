@@ -196,3 +196,50 @@ class InteractiveAgent(Agent):
         """
         self.add_task(task)
         await self.step(step_info)
+
+    async def run_until_complete(
+        self,
+        task: str,
+        completion_prompt: str = "Have you completed all the required fields in this section? If yes, respond with 'TASK_COMPLETE'. If no, continue filling out the fields.",
+        max_steps: int = 20,
+        step_info: Optional[AgentStepInfo] = None
+    ) -> bool:
+        """
+        Let AI run multiple steps until it explicitly confirms completion.
+        The AI must respond with 'TASK_COMPLETE' to indicate it's done.
+        
+        Args:
+            task: The task description for the AI
+            completion_prompt: The prompt to check if the task is complete
+            max_steps: Maximum number of steps to try completing the task
+            step_info: Optional step information for metadata
+        
+        Returns:
+            bool: True if task was completed successfully, False otherwise
+        """
+        print(f"🤖 AI Task: {task}")
+        self.enable_agent()
+        self.add_task(task)
+        
+        # Run steps until AI confirms completion or max steps reached
+        for step in range(max_steps):
+            await self.step(step_info)
+            
+            # Check if AI has completed the task
+            last_message = str(self.state.history.history[-1]) if self.state.history.history else ""
+            if "TASK_COMPLETE" in last_message:
+                print("✅ AI confirmed task completion")
+                self.disable_agent()
+                return True
+                
+            # If we hit max steps, task might be incomplete
+            if step == max_steps - 1:
+                print("⚠️ AI task may be incomplete - hit max steps")
+                self.disable_agent()
+                return False
+            
+            # Add completion check prompt
+            self._message_manager._add_message_with_tokens(HumanMessage(content=completion_prompt))
+        
+        self.disable_agent()
+        return False

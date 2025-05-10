@@ -11,6 +11,7 @@ from getpass import getpass
 
 from langchain_openai import ChatOpenAI
 from ..util.interactive_agent import InteractiveAgent
+from ..util.user_data import UserData
 
 load_dotenv()
 
@@ -103,13 +104,14 @@ async def is_job_details_page(agent: InteractiveAgent) -> bool:
     current_url = page.url
     
     # First check if we're on a job details page
-    if '/job/' not in current_url:
+    if '/apply/autofillWithResume' not in current_url:
         return False
 
     return True
 
 #TODO: this works for any xpath, make this constant and work for any file input
 #      refactor later
+#      perhaps add xpath to param to make it reusable for other sites
 async def upload_resume(page) -> bool:
     """
     Manually handle resume upload using Playwright's file input functionality.
@@ -164,12 +166,90 @@ async def upload_resume(page) -> bool:
         print(f"⚠️ Error during resume upload: {e}")
         return False
 
+async def fill_personal_info_section(page, user_data: UserData) -> bool:
+    """
+    Fill out the personal information section of the application.
+    """
+    try:
+        print("🔧 Filling personal information section...")
+        
+        # Map of field selectors to user data
+        field_mappings = {
+            'input[data-automation-id="first-name-input"]': user_data.first_name,
+            'input[data-automation-id="last-name-input"]': user_data.last_name,
+            'input[data-automation-id="email-input"]': user_data.email,
+            'input[data-automation-id="phone-input"]': user_data.phone or '',
+        }
+        
+        # Fill each field
+        for selector, value in field_mappings.items():
+            field = page.locator(selector)
+            await field.fill(value)
+            await page.wait_for_timeout(500)  # Small delay between fields
+            
+        print("✅ Personal information section filled")
+        return True
+    except Exception as e:
+        print(f"⚠️ Error filling personal information: {e}")
+        return False
+
+async def fill_work_experience_section(page, user_data: UserData) -> bool:
+    """
+    Fill out the work experience section of the application.
+    """
+    try:
+        print("🔧 Filling work experience section...")
+        
+        # Map of field selectors to user data
+        field_mappings = {
+            'input[data-automation-id="company-input"]': user_data.current_company or '',
+            'input[data-automation-id="job-title-input"]': user_data.current_title or '',
+            'input[data-automation-id="years-experience-input"]': str(user_data.years_of_experience or 0),
+        }
+        
+        # Fill each field
+        for selector, value in field_mappings.items():
+            field = page.locator(selector)
+            await field.fill(value)
+            await page.wait_for_timeout(500)
+            
+        print("✅ Work experience section filled")
+        return True
+    except Exception as e:
+        print(f"⚠️ Error filling work experience: {e}")
+        return False
+
+async def check_for_unexpected_fields(agent: InteractiveAgent, section_name: str) -> bool:
+    """
+    Let AI check for any unexpected fields in the current section.
+    """
+    try:
+        print(f"🤖 Checking for unexpected fields in {section_name}...")
+        
+        # Create a prompt that includes the section name
+        prompt = f"""
+        You are on the {section_name} section of a job application form.
+        Please check if there are any fields that need to be filled out that we haven't handled.
+        If you find any, fill them out appropriately.
+        If everything looks good, click the 'Next' or 'Continue' button to proceed to the next section.
+        """
+        
+        # Let AI handle any unexpected fields
+        await agent.run_single_step(prompt)
+        return True
+    except Exception as e:
+        print(f"⚠️ Error checking for unexpected fields: {e}")
+        return False
+
 async def main():
     # Initialize LLM
     llm = ChatOpenAI(model='gpt-4o', temperature=0.0)
     
+    # Get user data
+    user_data = UserData()
+    
     # Initial task to navigate to NVIDIA careers
-    task = "Navigate to NVIDIA careers page and find software engineering internships"
+    task = "Apply to the position"
     agent = InteractiveAgent(task=task, llm=llm)
     
     # Start in manual mode for login
@@ -192,19 +272,26 @@ async def main():
     await page.goto("https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite", wait_until='domcontentloaded')
     await page.wait_for_timeout(2000)
     
-    # Let AI handle finding and clicking on an internship
+    # Navigate directly to the specific job URL
+    print("🔧 Manual: navigating to specific job posting")
+    job_url = "https://nvidia.wd5.myworkdayjobs.com/en-US/NVIDIAExternalCareerSite/job/India%2C-Bengaluru/Hardware-Engineer_JR1978791"
+    await page.goto(job_url, wait_until='domcontentloaded')
+    
+    # Let AI handle clicking Apply and starting the application process
     task_success = await agent.run_ai_task(
-        task="Search for any internships, click on the first relevant position, click the Apply button, and select 'Apply with Resume' to start the actual application process",
+        task="Click the Apply button and select 'Apply with Resume' to start the actual application process",
         success_condition=is_job_details_page,
-        max_steps=20
+        max_steps=10
     )
     
     if not task_success:
-        print("⚠️ AI couldn't complete the task. You may need to manually select a job and start the application process.")
+        print("⚠️ AI couldn't complete the task. You may need to manually start the application process.")
         await agent.close()
         return
         
-    print("✅ Successfully found a job and started the application process")
+    print("✅ Successfully started the application process")
+
+    #===============RESUME UPLOAD===============
     
     # Handle resume upload manually
     upload_success = await upload_resume(page)
@@ -214,16 +301,27 @@ async def main():
         return
         
     print("✅ Resume uploaded successfully")
+
+    await agent.step_with_prompt("Click the 'Next' or 'Continue' button to proceed to the next section")
+
+    #=============MY INFORMATION SECTION=============
     
-    
-    #TODO: Implement the rest of the application form
-    #      Perhaps manual for known fields, ai to check for the rest
-    agent.enable_agent()
-    await agent.run_ai_task(
-        task="Complete the rest of the application form",
-        success_condition=lambda agent: False,  # We'll need to define a proper success condition
-        max_steps=30
+    # Let AI fill out the section completely
+    section_success = await agent.run_until_complete(
+        task="Fill out all required fields in the My Information section. Make sure to check for any additional fields that need to be filled.",
+        completion_prompt="Have you filled out all required fields in the My Information section? If yes, respond with 'TASK_COMPLETE'. If no, continue filling out the fields.",
+        max_steps=20
     )
+    
+    if not section_success:
+        print("⚠️ Failed to complete My Information section")
+        await agent.close()
+        return
+        
+    print("✅ My Information section filled")
+    
+    # Let AI click next
+    await agent.step_with_prompt("Click the 'Next' or 'Continue' button to proceed to the next section")
     
     # Clean up
     await page.wait_for_timeout(1000000) #for sake of testing
