@@ -6,3 +6,4 @@ langserve
 selenium
 python-dotenv
 beautifulsoup4
+browser-use=0.1.40
