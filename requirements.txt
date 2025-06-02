@@ -3,6 +3,7 @@ langchain-openai
 langsmith
 langchain-community
 langserve
-selenium
+selenium>=4.0.0
 python-dotenv
 beautifulsoup4
+
