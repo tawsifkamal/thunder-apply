@@ -124,7 +124,7 @@ class SimplifiedDOMExtractor:
         # Fill in the form fields using the mapping
         for key, value in mapping.items():
             if isinstance(value, dict) and "id" in value:
-                element = self.driver.find_element(by = By.ID)
+                element = self.driver.find_element(by=By.ID, value=value["id"])
                 if value["type"] == "input":
                     element.send_keys(profile[key])
                 elif value["type"] == "file":
@@ -228,8 +228,8 @@ if __name__ == "__main__":
     print(simplified_dom)
 
     # Interact with the page (example)
-    extractor.click_button_by_id("interactive-1")
-    extractor.fill_input_by_id("interactive-2", "Sample text")
+    # extractor.click_element_by_type_and_text("button", "Click Me")
+    # extractor.fill_element_by_type_and_attribute("input", "id", "interactive-2", "Sample text")
 
     # Close the browser when done
     extractor.close()
