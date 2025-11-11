@@ -3,6 +3,8 @@ import json
 from typing import List, Dict
 import traceback
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -19,10 +21,12 @@ class SimplifiedDOMExtractor:
     def __init__(self, headless: bool = True):
         """Initialize Selenium WebDriver."""
         chrome_options = Options()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
         if headless:
             chrome_options.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=chrome_options)
-        self.driver.implicitly_wait(5)  # Wait up to 5 seconds for elements to appear
+        self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+        self.driver.implicitly_wait(5)
 
     def load_page(self, url: str):
         """Load the webpage."""
@@ -120,17 +124,85 @@ class SimplifiedDOMExtractor:
                         tag.decompose()
         return soup
     
-    def auto_fill(self, profile, mapping):
-        # Fill in the form fields using the mapping
-        for key, value in mapping.items():
-            if isinstance(value, dict) and "id" in value:
-                element = self.driver.find_element(by = By.ID)
-                if value["type"] == "input":
-                    element.send_keys(profile[key])
-                elif value["type"] == "file":
-                    element.send_keys(profile["resume_path"])  # for file upload
+    @staticmethod
+    def _get_nested_profile_value(profile, key):
+        """
+        Retrieves a value from a nested dictionary using a dot-separated key.
+        Example: "location.city"
+        """
+        keys = key.split('.')
+        value = profile
+        for k in keys:
+            if isinstance(value, dict):
+                value = value.get(k)
+            else:
+                return None
+        return value
 
-    
+    def auto_fill(self, profile, mapping):
+        """
+        Automatically fills a web form using user profile data and a mapping configuration.
+
+        Args:
+            profile (dict): A dictionary containing the user's profile data.
+            mapping (dict): A dictionary that maps profile keys to form element selectors.
+        """
+        for profile_key, item in mapping.items():
+            profile_value = self._get_nested_profile_value(profile, profile_key)
+
+            if profile_value is None:
+                print(f"Skipping '{profile_key}' as it is not found in the profile.")
+                continue
+
+            selector = item.get("selector")
+            by = item.get("by", "ID").upper()
+            element_type = item.get("type", "input").lower()
+
+            if not selector:
+                print(f"Skipping '{profile_key}' as it has no selector in the mapping.")
+                continue
+
+            try:
+                if by == "ID":
+                    element = self.driver.find_element(By.ID, selector)
+                elif by == "NAME":
+                    element = self.driver.find_element(By.NAME, selector)
+                elif by == "XPATH":
+                    element = self.driver.find_element(By.XPATH, selector)
+                elif by == "CSS_SELECTOR":
+                    element = self.driver.find_element(By.CSS_SELECTOR, selector)
+                else:
+                    print(f"Unsupported 'by' value: {by}")
+                    continue
+
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                time.sleep(0.5)
+
+                if element_type in ["input", "textarea"]:
+                    element.clear()
+                    element.send_keys(profile_value)
+                elif element_type == "file":
+                    element.send_keys(profile_value)
+                elif element_type == "select":
+                    from selenium.webdriver.support.ui import Select
+                    select = Select(element)
+                    try:
+                        select.select_by_visible_text(str(profile_value))
+                    except NoSuchElementException:
+                        try:
+                            select.select_by_value(str(profile_value))
+                        except NoSuchElementException:
+                            print(f"Could not select option '{profile_value}' for '{profile_key}'")
+
+                time.sleep(0.5)
+                print(f"Successfully filled '{profile_key}' with value '{profile_value}'")
+
+            except (NoSuchElementException, ElementNotInteractableException, TimeoutException):
+                print(f"Could not find or interact with element for '{profile_key}' using {by}='{selector}'")
+            except Exception as e:
+                print(f"An unexpected error occurred while filling '{profile_key}': {e}")
+                traceback.print_exc()
+
     def click_element_by_type_and_text(self, element_type: str, text: str):
         """Click an element based on its type and visible text content."""
         try:

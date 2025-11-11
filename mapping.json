@@ -1,0 +1,32 @@
+{
+  "first_name": {
+    "selector": "first_name",
+    "by": "ID",
+    "type": "input"
+  },
+  "last_name": {
+    "selector": "last_name",
+    "by": "ID",
+    "type": "input"
+  },
+  "email": {
+    "selector": "email",
+    "by": "ID",
+    "type": "input"
+  },
+  "phone_number": {
+    "selector": "phone",
+    "by": "ID",
+    "type": "input"
+  },
+  "location.full_location": {
+    "selector": "auto_complete_input",
+    "by": "ID",
+    "type": "input"
+  },
+  "resume_path": {
+    "selector": "input[type='file']",
+    "by": "CSS_SELECTOR",
+    "type": "file"
+  }
+}
