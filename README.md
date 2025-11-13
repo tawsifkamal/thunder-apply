@@ -1,1 +1,1 @@
-# One Click Apply -> Watch AI apply to jobs for you -> Relax
+# One Click Apply -> Watch AI apply to jobs for you -> Relax 🚀
