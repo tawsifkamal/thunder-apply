@@ -1,4 +1,3 @@
-import time
 import json
 from typing import List, Dict
 import traceback
@@ -28,7 +27,10 @@ class SimplifiedDOMExtractor:
         """Load the webpage."""
         self.driver.get(url)
 
-        time.sleep(2)  # Wait for the page to load completely
+        # Wait for the page to load completely (document.readyState to be complete)
+        WebDriverWait(self.driver, 10).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
 
     def extract_interactive_elements(self) -> str:
         """Extract interactive elements and simplify the DOM."""
@@ -150,8 +152,6 @@ class SimplifiedDOMExtractor:
             # Click the element
             element.click()
 
-            # Wait for any actions to complete (adjust as necessary)
-            time.sleep(1)
         except TimeoutException:
             print(f"Timeout: Element '{element_type}' with text '{text}' not found or not clickable.")
         except NoSuchElementException:
@@ -192,8 +192,6 @@ class SimplifiedDOMExtractor:
             # Input the specified text
             element.send_keys(text)
 
-            # Wait briefly to ensure text is entered
-            time.sleep(0.5)
         except TimeoutException:
             print(
                 f"Timeout: Element '{element_type}' with {attribute_name}='{attribute_value}' "
